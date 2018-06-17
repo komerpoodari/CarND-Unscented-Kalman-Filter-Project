@@ -1,6 +1,7 @@
 #ifndef UKF_H
 #define UKF_H
 
+#include "tools.h"
 #include "measurement_package.h"
 #include "Eigen/Dense"
 #include <vector>
@@ -32,7 +33,7 @@ public:
   MatrixXd Xsig_pred_;
 
   ///* time when the state is true, in us
-  long long time_us_;
+  long long previous_timestamp_;
 
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
@@ -64,10 +65,21 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
-  ///* Sigma point spreading parameter
+  ///* lambda parameter
   double lambda_;
 
-
+  ///*  komer:  H matrix for Lidar matrix
+  MatrixXd H_;
+  
+  ///* komer -  declare R_ for Laser.
+  MatrixXd R_;
+ 
+  /// heart beat counter 
+  long long process_counter_;
+  
+  // used to compute normalize angles
+  Tools tool;
+  
   /**
    * Constructor
    */
@@ -102,6 +114,8 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+  
+  
 };
 
 #endif /* UKF_H */
