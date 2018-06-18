@@ -56,31 +56,24 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     
 	//return the result
 	return rmse;
-  
 }
 
 /**
-   *  Normalize angle
+   *  Normalize angle.
    */
 double Tools::normalize_angle(double in_radians){
     double radians;
     radians = in_radians;
     if (fabs(radians) > 2*M_PI) {
-      //cout << "in_radians before mod: " << radians << endl;
       radians = fmodf(radians, 2*M_PI);
-      //cout << "out_radians after mod: " << radians << endl;
   }
   
   // in case absolute theta  > 180 degrees 
   if (radians > M_PI) {
-      //cout << "radians before sub: " << radians << endl;
       radians -= 2*M_PI;
-      //cout << "radians after sub: " << radians << endl;
   }
   else if (radians < -M_PI) {
-      //cout << "radians before add: " << radians << endl;
       radians += 2*M_PI;
-      //cout << "radians after add: " << radians << endl;
   }
   return radians;
 }

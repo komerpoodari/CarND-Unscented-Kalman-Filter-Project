@@ -1,6 +1,11 @@
 # Unscented Kalman Filter Project Starter Code
 Self-Driving Car Engineer Nanodegree Program
 
+**This file is updated based on the assignment submission.**
+
+[//]: # (Image References)
+[image1]: ./ukf-result.png
+
 In this project utilize an Unscented Kalman Filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower that the tolerance outlined in the project rubric. 
 
 This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases)
@@ -8,6 +13,65 @@ This project involves the Term 2 Simulator which can be downloaded [here](https:
 This repository includes two files that can be used to set up and intall [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even [Windows 10 Bash on Ubuntu](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/) to install uWebSocketIO. Please see [this concept in the classroom](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/16cf4a78-4fc7-49e1-8621-3450ca938b77) for the required version and installation scripts.
 
 Once the install for uWebSocketIO is complete, the main program can be built and ran by doing the following from the project top directory.
+
+## Relevant Implementation Details.
+This section describes the files modified / extended to implement the Extended Kalman filter.
+
+
+### `ukf.cpp` and `ukf.h`
+These files contain main sensor data processing objects and associated functions. The main implementation logic includes the following.
+1. Variables and matrices initialization including (x_, P_, Xsig_pred_ H_, R_, and noise parameters, etc.)
+2. Handling first frame with appropriate position values assignment
+3. Updating x_ and P_ matrices based on elapsed time between measurements, in prediction.
+4. Invoking relevant update step as per sensor data.
+
+The following situations are handled appropriately.
+1. Avoid division by zero: Ensure that position values are non_zero (atleast one of the position coordinate either px or py shall be non_zero) to avoid division by zero.
+2. Normalize Angles: The angle part of  y (difference between measurement and prediction) shall be normalized between +pi and -pi for correct RMSE value computation and correct predictions and updates.
+
+Rest of the implementation is taken from class quizzes.
+
+### `tools.cpp`
+This file contains essentially functions to normalize angles, without excessive loops and RMSE error computation.
+
+## Observations
+I exercised the implementation in various scenarios as described in this section.
+
+### Observation 1:  Data set 1, with sensor fusion (laser + radar); std_a_ = 0.5; std_yawdd_ = 0.5; and diagnal elements of P_ are initialized to 0.25
+
+The RMSE values observed were well below the limits of RMSE <= (Px:0.09, Py:0.10, Vx:0.40, Vy:0.30), i.e. **(Px:0.0621, Py:0.0836, Vx:0.2940, Vy:0.1790)**, as captured in the following picture.
+![alt text][image1]
+
+
+### Observation 2: Observations with Fusion (Laser (R) + Radar (R)), Laser only ('L') and  Radar only ('R').
+I observed three combinations of RMSE measurement process with L, R and Fusion (L+R).  The observations are captured in the following table.
+As expected the RMSE numbers are the best (lowest) for fusion, which is the advantage of Unscented Kalman filter.
+Laser performed better than Radar in single sensor processing, as expected.
+
+ |Num| std_a_ |std_yawdd_|P_ diagnal |Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
+ |:-:|:------:|:--------:|:---------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
+ |1  |  0.75  |   0.75   |    1.0    | L+R|   1   | 0.0629| 0.0841| 0.3314| 0.2138|
+ |2  |  0.60  |   0.60   |    1.0    | L+R|   1   | 0.0614| 0.0858| 0.3816| 0.2585|
+ |3  |  0.50  |   0.45   |    1.0    | L+R|   1   | 0.0617| 0.0858| 0.3308| 0.2144|
+ |4  |  0.50  |   0.50   |    0.25   | L+R|   1   | 0.0621| 0.0836| 0.2940| 0.1790|
+ |5  |  0.50  |   0.50   |    0.25   | L  |   1   | 0.1266| 0.0989| 0.7098| 0.2340|
+ |6  |  0.50  |   0.50   |    0.25   | R  |   1   | 0.1535| 0.1930| 0.3228| 0.2276|
+
+### Observation 3: Comparison between  EKF and UKF observations.
+Overall UKF performed far better than EKF.  The following are the data.
+
+ |Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
+ |:-:|:------:|:------:|:--------------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
+ |1  |    9   |   9    |      (0,0)     | L+R|   1   | 0.0973| 0.0855| 0.4513| 0.4399|
+ 
+ |Num| std_a_ |std_yawdd_|P_ diagnal |Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
+ |:-:|:------:|:--------:|:---------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
+ |4  |  0.50  |   0.50   |    0.25   | L+R|   1   | 0.0621| 0.0836| 0.2940| 0.1790|
+
+Overal, this assignment offered me good grasp the implmentation of EKF and helps further understanding theory behind. I would like do NIS analysis later.
+
+
+
 
 1. mkdir build
 2. cd build
